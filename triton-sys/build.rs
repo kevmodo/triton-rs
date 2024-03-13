@@ -3,7 +3,7 @@ use std::path::PathBuf;
 
 fn main() {
     let bindings = bindgen::Builder::default()
-        .clang_arg("-Fdeps/core/include")
+        .clang_arg("-Ideps/core/include")
         .clang_arg("-xc++")
         .header("deps/core/include/triton/core/tritonbackend.h")
         .parse_callbacks(Box::new(bindgen::CargoCallbacks))

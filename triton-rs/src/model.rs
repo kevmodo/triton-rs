@@ -1,4 +1,4 @@
-use crate::{check_err, BoxError};
+use crate::{check_err, Error};
 use libc::c_char;
 use std::ffi::CStr;
 use std::fs::File;
@@ -15,7 +15,7 @@ impl Model {
         Self { ptr }
     }
 
-    pub fn name(&self) -> Result<String, BoxError> {
+    pub fn name(&self) -> Result<String, Error> {
         let mut model_name: *const c_char = ptr::null_mut();
         check_err(unsafe { triton_sys::TRITONBACKEND_ModelName(self.ptr, &mut model_name) })?;
 
@@ -23,13 +23,13 @@ impl Model {
         Ok(c_str.to_string_lossy().to_string())
     }
 
-    pub fn version(&self) -> Result<u64, BoxError> {
+    pub fn version(&self) -> Result<u64, Error> {
         let mut version = 0u64;
         check_err(unsafe { triton_sys::TRITONBACKEND_ModelVersion(self.ptr, &mut version) })?;
         Ok(version)
     }
 
-    pub fn location(&self) -> Result<String, BoxError> {
+    pub fn location(&self) -> Result<String, Error> {
         let mut artifact_type: triton_sys::TRITONBACKEND_ArtifactType = 0u32;
         let mut location: *const c_char = ptr::null_mut();
         check_err(unsafe {
@@ -40,7 +40,7 @@ impl Model {
         Ok(c_str.to_string_lossy().to_string())
     }
 
-    pub fn path(&self, filename: &str) -> Result<PathBuf, BoxError> {
+    pub fn path(&self, filename: &str) -> Result<PathBuf, Error> {
         Ok(PathBuf::from(format!(
             "{}/{}/{}",
             self.location()?,
@@ -49,7 +49,7 @@ impl Model {
         )))
     }
 
-    pub fn load_file(&self, filename: &str) -> Result<Vec<u8>, BoxError> {
+    pub fn load_file(&self, filename: &str) -> Result<Vec<u8>, Error> {
         let path = self.path(filename)?;
         let mut f = File::open(path)?;
 

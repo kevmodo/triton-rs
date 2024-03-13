@@ -3,7 +3,7 @@ name = "triton-rs"
 version = "0.1.1"
 edition = "2021"
 authors = ["Sven Sauleau <sven@cloudflare.com>"]
-description = "Rust bindings to the Triton Inference Server for implementing backends"
+description = "Rust bindings to the Triton Inference Server"
 license = "MIT"
 repository = "https://github.com/xtuc/triton-rs"
 

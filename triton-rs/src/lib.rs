@@ -1,12 +1,15 @@
+mod backend;
 mod model;
 mod request;
 
+pub use backend::Backend;
 pub use model::Model;
 pub use request::Request;
+pub use triton_sys as sys;
 
-pub(crate) type BoxError = Box<dyn std::error::Error>;
+pub type Error = Box<dyn std::error::Error>;
 
-pub(crate) fn check_err(err: *mut triton_sys::TRITONSERVER_Error) -> Result<(), BoxError> {
+pub(crate) fn check_err(err: *mut triton_sys::TRITONSERVER_Error) -> Result<(), Error> {
     if !err.is_null() {
         let code = unsafe { triton_sys::TRITONSERVER_ErrorCode(err) };
         Err(format!(
@@ -19,7 +22,7 @@ pub(crate) fn check_err(err: *mut triton_sys::TRITONSERVER_Error) -> Result<(), 
     }
 }
 
-pub fn decode_string(data: &[u8]) -> Result<Vec<String>, BoxError> {
+pub fn decode_string(data: &[u8]) -> Result<Vec<String>, Error> {
     let mut strings = vec![];
     let mut i = 0;
 

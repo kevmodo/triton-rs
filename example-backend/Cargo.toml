@@ -1,0 +1,14 @@
+[package]
+name = "example-backend"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+triton-rs = { path = "../triton-rs" }
+triton-sys = { path = "../triton-sys" }
+libc = "0.2.148"
+
+[lib]
+name = "triton_example"
+crate-type = ["cdylib"]

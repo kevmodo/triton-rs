@@ -1,4 +1,4 @@
-use crate::{check_err, decode_string, BoxError};
+use crate::{check_err, decode_string, Error};
 use libc::c_void;
 use std::ffi::CStr;
 use std::ffi::CString;
@@ -18,7 +18,7 @@ impl Request {
         self.ptr
     }
 
-    pub fn get_input(&self, name: &str) -> Result<Input, BoxError> {
+    pub fn get_input(&self, name: &str) -> Result<Input, Error> {
         let name = CString::new(name).expect("CString::new failed");
 
         let mut input: *mut triton_sys::TRITONBACKEND_Input = ptr::null_mut();
@@ -38,7 +38,7 @@ impl Input {
         Self { ptr }
     }
 
-    fn buffer(&self) -> Result<Vec<u8>, BoxError> {
+    fn buffer(&self) -> Result<Vec<u8>, Error> {
         let mut buffer: *const c_void = ptr::null_mut();
         let index = 0;
         let mut memory_type: triton_sys::TRITONSERVER_MemoryType = 0;
@@ -60,7 +60,7 @@ impl Input {
         Ok(mem.to_vec())
     }
 
-    pub fn as_string(&self) -> Result<String, BoxError> {
+    pub fn as_string(&self) -> Result<String, Error> {
         let properties = self.properties()?;
         let buffer = self.buffer()?;
 
@@ -68,7 +68,7 @@ impl Input {
         Ok(strings.first().unwrap().clone())
     }
 
-    pub fn as_u64(&self) -> Result<u64, BoxError> {
+    pub fn as_u64(&self) -> Result<u64, Error> {
         let properties = self.properties()?;
         let buffer = self.buffer()?;
 
@@ -78,7 +78,7 @@ impl Input {
         Ok(u64::from_le_bytes(bytes))
     }
 
-    fn properties(&self) -> Result<InputProperties, BoxError> {
+    fn properties(&self) -> Result<InputProperties, Error> {
         let mut name = ptr::null();
         let mut datatype = 0u32;
         let shape = ptr::null_mut();
