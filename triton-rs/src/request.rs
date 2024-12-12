@@ -38,6 +38,35 @@ impl Input {
         Self { ptr }
     }
 
+    /// Gets a reference to the buffer associated with the input. Note the buffer index must
+    /// be less than the buffer count (
+    pub fn raw_buffer<'a>(&'a self, buffer_index: u32) -> Result<&'a [u8], Error> {
+        let properties = self.properties()?;
+        if buffer_index >= properties.buffer_count {
+            return Err(format!(
+                "Buffer index out of range: {} >= {}",
+                buffer_index, properties.buffer_count
+            )
+            .into());
+        }
+        let mut buffer: *const c_void = ptr::null_mut();
+        let mut memory_type: triton_sys::TRITONSERVER_MemoryType = 0;
+        let mut memory_type_id = 0;
+        let mut buffer_byte_size = 0;
+        check_err(unsafe {
+            triton_sys::TRITONBACKEND_InputBuffer(
+                self.ptr,
+                buffer_index,
+                &mut buffer,
+                &mut buffer_byte_size,
+                &mut memory_type,
+                &mut memory_type_id,
+            )
+        })?;
+
+        Ok(unsafe { slice::from_raw_parts(buffer as *const u8, buffer_byte_size as usize) })
+    }
+
     fn buffer(&self) -> Result<Vec<u8>, Error> {
         let mut buffer: *const c_void = ptr::null_mut();
         let index = 0;
