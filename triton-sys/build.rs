@@ -6,7 +6,7 @@ fn main() {
         .clang_arg("-Ideps/core/include")
         .clang_arg("-xc++")
         .header("deps/core/include/triton/core/tritonbackend.h")
-        .parse_callbacks(Box::new(bindgen::CargoCallbacks))
+        .parse_callbacks(Box::new(bindgen::CargoCallbacks::new()))
         .generate()
         .expect("Unable to generate bindings");
 

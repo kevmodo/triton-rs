@@ -10,4 +10,4 @@ repository = "https://github.com/xtuc/triton-rs"
 [dependencies]
 
 [build-dependencies]
-bindgen = "0.65.1"
+bindgen = "0.71.1"

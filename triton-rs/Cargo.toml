@@ -8,5 +8,5 @@ license = "MIT"
 repository = "https://github.com/xtuc/triton-rs"
 
 [dependencies]
-libc = "0.2.148"
+libc = "0.2.168"
 triton-sys = { version = "0.1.0", path = "../triton-sys" }

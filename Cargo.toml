@@ -1,4 +1,5 @@
 [workspace]
+resolver = "2"
 
 members = [
     "./triton-rs", "./triton-sys", "example-backend",
