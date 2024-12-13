@@ -1,10 +1,12 @@
 mod backend;
 mod model;
 mod request;
+mod response;
 
 pub use backend::Backend;
 pub use model::Model;
 pub use request::Request;
+pub use response::{Output, Response};
 pub use triton_sys as sys;
 
 pub type Error = Box<dyn std::error::Error>;
