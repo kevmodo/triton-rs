@@ -1,9 +1,13 @@
 mod backend;
+#[cfg(feature = "tracing")]
+mod log;
 mod model;
 mod request;
 mod response;
 
 pub use backend::Backend;
+#[cfg(feature = "tracing")]
+pub use log::TritonLogger;
 pub use model::Model;
 pub use request::Request;
 pub use response::{Output, Response};
