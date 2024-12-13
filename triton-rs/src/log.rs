@@ -76,7 +76,7 @@ impl<S: Subscriber> Layer<S> for TritonLogger {
 
             let mut message = String::new();
             let writer = Writer::new(&mut message);
-            let mut visitor = PrettyVisitor::new(writer, false);
+            let mut visitor = PrettyVisitor::new(writer, true);
             event.record(&mut visitor);
             let message_c = CString::new(message).unwrap();
 
