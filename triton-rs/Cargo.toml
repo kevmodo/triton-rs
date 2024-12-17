@@ -12,6 +12,8 @@ libc = "0.2.168"
 triton-sys = { version = "0.1.0", path = "../triton-sys" }
 tracing = { version = "0.1.41", optional = true }
 tracing-subscriber = { version = "0.3.19", optional = true }
+serde_json = { version = "1.0.133", optional = true }
 
 [features]
 tracing = ["dep:tracing", "dep:tracing-subscriber"]
+json = ["dep:serde_json"]

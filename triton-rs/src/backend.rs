@@ -22,6 +22,29 @@ pub trait Backend {
         Ok(())
     }
 
+    /// Initialize for a model. This function is optional, a backend is
+    /// not required to implement it. This function is called once when a
+    /// model is loaded to allow the backend to initialize any state
+    /// associated with the model.
+    ///
+    /// Corresponds to TRITONBACKEND_ModelInitialize.
+    #[allow(unused_variables)]
+    fn model_initialize(model: super::Model) -> Result<(), Error> {
+        Ok(())
+    }
+
+    /// Finalize for a model. This function is optional, a backend is not
+    /// required to implement it. This function is called once, just
+    /// before the model is unloaded from Triton. All state associated
+    /// with the model should be freed and any threads created for the
+    /// model should be exited/joined before returning from this function.
+    ///
+    /// Corresponds to TRITONBACKEND_ModelFinalize.
+    #[allow(unused_variables)]
+    fn model_finalize(model: super::Model) -> Result<(), Error> {
+        Ok(())
+    }
+
     /// Initialize for a model instance. This function is optional, a
     /// backend is not required to implement it. This function is called
     /// once when a model instance is created to allow the backend to
@@ -90,6 +113,24 @@ macro_rules! declare_backend {
             backend: *const triton_rs::sys::TRITONBACKEND_Backend,
         ) -> *const triton_rs::sys::TRITONSERVER_Error {
             triton_rs::call_checked!($class::finalize())
+        }
+
+        #[no_mangle]
+        extern "C" fn TRITONBACKEND_ModelInitialize(
+            model: *const triton_rs::sys::TRITONBACKEND_Model,
+        ) -> *const triton_rs::sys::TRITONSERVER_Error {
+            let model =
+                triton_rs::Model::from_ptr(model as *mut triton_rs::sys::TRITONBACKEND_Model);
+            triton_rs::call_checked!($class::model_initialize(model))
+        }
+
+        #[no_mangle]
+        extern "C" fn TRITONBACKEND_ModelFinalize(
+            model: *const triton_rs::sys::TRITONBACKEND_Model,
+        ) -> *const triton_rs::sys::TRITONSERVER_Error {
+            let model =
+                triton_rs::Model::from_ptr(model as *mut triton_rs::sys::TRITONBACKEND_Model);
+            triton_rs::call_checked!($class::model_finalize(model))
         }
 
         #[no_mangle]

@@ -4,6 +4,8 @@ use libc::c_void;
 use std::ffi::CString;
 use std::ptr;
 use std::slice;
+#[cfg(feature = "tracing")]
+use tracing::error;
 
 /// Represents a response to a Triton inference request.
 ///
@@ -11,6 +13,7 @@ use std::slice;
 /// to create and send responses back to clients.
 pub struct Response {
     ptr: *mut triton_sys::TRITONBACKEND_Response,
+    sent: bool,
 }
 
 impl Response {
@@ -20,7 +23,10 @@ impl Response {
         check_err(unsafe {
             triton_sys::TRITONBACKEND_ResponseNew(&mut response, request.as_ptr())
         })?;
-        Ok(Self { ptr: response })
+        Ok(Self {
+            ptr: response,
+            sent: false,
+        })
     }
 
     /// Creates a new output tensor in the response.
@@ -50,11 +56,24 @@ impl Response {
     /// Sends the response back to the client.
     ///
     /// This consumes the response object and finalizes the inference response.
-    pub fn send(self) -> Result<(), Error> {
+    pub fn send(mut self) -> Result<(), Error> {
         let send_flags =
             triton_sys::tritonserver_responsecompleteflag_enum_TRITONSERVER_RESPONSE_COMPLETE_FINAL;
+        self.sent = true;
         let err = ptr::null_mut();
         check_err(unsafe { triton_sys::TRITONBACKEND_ResponseSend(self.ptr, send_flags, err) })
+    }
+}
+
+impl Drop for Response {
+    fn drop(&mut self) {
+        if !self.sent {
+            let _result = check_err(unsafe { triton_sys::TRITONBACKEND_ResponseDelete(self.ptr) });
+            #[cfg(feature = "tracing")]
+            if let Err(error) = _result {
+                error!(error, "Failed to delete response");
+            }
+        }
     }
 }
 
