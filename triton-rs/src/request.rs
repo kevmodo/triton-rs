@@ -41,7 +41,7 @@ impl Input {
 
     /// Gets a reference to the buffer associated with the input. Note the buffer index must
     /// be less than the buffer count (
-    fn raw_buffer<'a>(&'a self, buffer_index: u32) -> Result<&'a [u8], Error> {
+    fn raw_buffer(&self, buffer_index: u32) -> Result<&[u8], Error> {
         let mut buffer: *const c_void = ptr::null_mut();
         let mut memory_type = triton_sys::TRITONSERVER_memorytype_enum_TRITONSERVER_MEMORY_CPU;
         let mut memory_type_id = 0;

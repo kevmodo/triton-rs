@@ -47,7 +47,7 @@ impl Model {
         check_err(unsafe { triton_sys::TRITONBACKEND_ModelState(self.ptr, &mut state_ptr) })?;
         if !state_ptr.is_null() {
             return unsafe {
-                let data = Box::from_raw(state_ptr);
+                let data = Box::from_raw(state_ptr as *mut Box<dyn Any>);
                 triton_sys::TRITONBACKEND_ModelSetState(self.ptr, ptr::null_mut());
                 Ok(Some(data))
             };
@@ -150,7 +150,7 @@ impl ModelConfig {
             ))?;
             let base = base.assume_init();
             let byte_size = byte_size.assume_init();
-            let json_slice = std::slice::from_raw_parts(base as *const u8, byte_size as usize);
+            let json_slice = std::slice::from_raw_parts(base as *const u8, byte_size);
             Ok(std::str::from_utf8(json_slice)?)
         }
     }
@@ -168,7 +168,7 @@ impl ModelConfig {
             ))?;
             let base = base.assume_init();
             let byte_size = byte_size.assume_init();
-            let json_slice = std::slice::from_raw_parts(base as *const u8, byte_size as usize);
+            let json_slice = std::slice::from_raw_parts(base as *const u8, byte_size);
             Ok(serde_json::from_slice(json_slice)?)
         }
     }

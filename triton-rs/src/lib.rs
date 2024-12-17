@@ -15,7 +15,6 @@ pub use triton_sys as sys;
 
 pub type Error = Box<dyn std::error::Error>;
 
-#[must_use]
 pub(crate) fn check_err(err: *mut triton_sys::TRITONSERVER_Error) -> Result<(), Error> {
     if !err.is_null() {
         let code = unsafe { triton_sys::TRITONSERVER_ErrorCode(err) };
