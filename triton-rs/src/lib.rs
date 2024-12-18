@@ -7,9 +7,9 @@ mod response;
 
 pub use backend::Backend;
 #[cfg(feature = "tracing")]
-pub use log::TritonLogger;
+pub use log::{init_logger, TritonLogger};
 pub use model::Model;
-pub use request::Request;
+pub use request::{DataType, Request};
 pub use response::{Output, Response};
 pub use triton_sys as sys;
 

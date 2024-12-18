@@ -2,7 +2,7 @@ use crate::{check_err, Error};
 use libc::c_char;
 #[cfg(feature = "json")]
 use serde_json::Value;
-use std::any::{Any, TypeId};
+use std::any::Any;
 use std::ffi::CStr;
 use std::fs::File;
 use std::io::prelude::*;
@@ -29,25 +29,25 @@ impl Model {
         Ok(c_str.to_string_lossy().to_string())
     }
 
-    pub fn set_data<D>(&self, data: D) -> Result<(), Error>
+    pub fn set_state<D>(&self, state: D) -> Result<(), Error>
     where
         D: Any + Send + 'static,
     {
-        self.drop_data()?;
-        let data = Box::new(data);
-        let data_ptr = Box::into_raw(data);
+        self.drop_state()?;
+        let state = Box::new(state);
+        let state_ptr = Box::into_raw(state);
         check_err(unsafe {
-            triton_sys::TRITONBACKEND_ModelSetState(self.ptr, data_ptr as *mut std::ffi::c_void)
+            triton_sys::TRITONBACKEND_ModelSetState(self.ptr, state_ptr as *mut std::ffi::c_void)
         })?;
         Ok(())
     }
 
-    pub fn drop_data(&self) -> Result<Option<Box<dyn Any>>, Error> {
+    pub fn drop_state(&self) -> Result<Option<Box<dyn Any>>, Error> {
         let mut state_ptr: *mut std::ffi::c_void = ptr::null_mut();
         check_err(unsafe { triton_sys::TRITONBACKEND_ModelState(self.ptr, &mut state_ptr) })?;
         if !state_ptr.is_null() {
             return unsafe {
-                let data = Box::from_raw(state_ptr as *mut Box<dyn Any>);
+                let data = Box::from_raw(state_ptr as *mut dyn Any);
                 triton_sys::TRITONBACKEND_ModelSetState(self.ptr, ptr::null_mut());
                 Ok(Some(data))
             };
@@ -55,7 +55,7 @@ impl Model {
         Ok(None)
     }
 
-    pub fn data<D>(&self) -> Result<Option<&D>, Error>
+    pub fn state<D>(&self) -> Result<Option<&D>, Error>
     where
         D: Any,
     {
@@ -69,12 +69,8 @@ impl Model {
         if state_ptr.is_null() {
             Ok(None)
         } else {
-            let data = unsafe { &*(state_ptr as *const D) };
-            if TypeId::of::<D>() == (*data).type_id() {
-                Ok(Some(data))
-            } else {
-                Err(Error::from("Model state type mismatch"))
-            }
+            let state = unsafe { &*(state_ptr as *const D) };
+            Ok(Some(state))
         }
     }
 

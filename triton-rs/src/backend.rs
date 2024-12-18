@@ -85,7 +85,7 @@ macro_rules! call_checked {
     ($res:expr) => {
         match $res {
             Err(err) => {
-                let err = CString::new(err.to_string()).expect("CString::new failed");
+                let err = std::ffi::CString::new(err.to_string()).expect("CString::new failed");
                 unsafe {
                     triton_rs::sys::TRITONSERVER_ErrorNew(
                         triton_rs::sys::TRITONSERVER_errorcode_enum_TRITONSERVER_ERROR_INTERNAL,
@@ -93,7 +93,7 @@ macro_rules! call_checked {
                     )
                 }
             }
-            Ok(ok) => ptr::null(),
+            Ok(ok) => std::ptr::null(),
         }
     };
 }
@@ -153,7 +153,7 @@ macro_rules! declare_backend {
             requests: *const *mut triton_rs::sys::TRITONBACKEND_Request,
             request_count: u32,
         ) -> *const triton_rs::sys::TRITONSERVER_Error {
-            let mut model: *mut triton_rs::sys::TRITONBACKEND_Model = ptr::null_mut();
+            let mut model: *mut triton_rs::sys::TRITONBACKEND_Model = std::ptr::null_mut();
             let err =
                 unsafe { triton_rs::sys::TRITONBACKEND_ModelInstanceModel(instance, &mut model) };
             if !err.is_null() {
@@ -162,13 +162,19 @@ macro_rules! declare_backend {
 
             let model = triton_rs::Model::from_ptr(model);
 
-            let requests = unsafe { slice::from_raw_parts(requests, request_count as usize) };
+            let requests = unsafe { std::slice::from_raw_parts(requests, request_count as usize) };
             let requests = requests
                 .iter()
                 .map(|req| triton_rs::Request::from_ptr(*req))
                 .collect::<Vec<triton_rs::Request>>();
 
-            triton_rs::call_checked!($class::model_instance_execute(model, &requests))
+            let err = triton_rs::call_checked!($class::model_instance_execute(model, &requests));
+            requests.iter().for_each(|req| {
+                let req_ptr = req.as_ptr();
+                // TODO: logging
+                unsafe { triton_rs::sys::TRITONBACKEND_RequestRelease(req_ptr,triton_rs::sys::tritonserver_requestreleaseflag_enum_TRITONSERVER_REQUEST_RELEASE_ALL) };
+            });
+            err
         }
     };
 }

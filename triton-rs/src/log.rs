@@ -5,7 +5,8 @@ use std::ffi::CString;
 use tracing::{Event, Subscriber};
 use tracing_subscriber::{
     fmt::format::{PrettyVisitor, Writer},
-    layer::Context,
+    layer::{Context, SubscriberExt},
+    util::SubscriberInitExt,
     Layer,
 };
 
@@ -24,6 +25,16 @@ use tracing_subscriber::{
 /// tracing::warn!("This is a warning message");
 /// tracing::info!("This is an info message");
 pub struct TritonLogger;
+
+use std::sync::OnceLock;
+
+static LOGGER: OnceLock<()> = OnceLock::new();
+
+pub fn init_logger() {
+    LOGGER.get_or_init(|| {
+        tracing_subscriber::registry().with(TritonLogger).init();
+    });
+}
 
 /// Triton log levels
 enum TritonLogLevel {
