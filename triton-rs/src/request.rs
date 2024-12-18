@@ -33,6 +33,17 @@ impl Request {
     }
 }
 
+impl Drop for Request {
+    fn drop(&mut self) {
+        unsafe {
+            triton_sys::TRITONBACKEND_RequestRelease(
+                self.ptr,
+                triton_sys::tritonserver_requestreleaseflag_enum_TRITONSERVER_REQUEST_RELEASE_ALL,
+            );
+        }
+    }
+}
+
 pub struct Input {
     ptr: *mut triton_sys::TRITONBACKEND_Input,
 }

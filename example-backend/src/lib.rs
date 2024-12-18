@@ -26,7 +26,7 @@ struct ExampleBackend;
 impl Backend for ExampleBackend {
     fn model_instance_execute(
         model: triton_rs::Model,
-        requests: &[triton_rs::Request],
+        requests: Vec<triton_rs::Request>,
     ) -> Result<(), triton_rs::Error> {
         println!("[EXAMPLE] model_instance_execute");
 

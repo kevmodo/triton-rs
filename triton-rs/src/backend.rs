@@ -76,7 +76,7 @@ pub trait Backend {
     /// Corresponds to TRITONBACKEND_ModelInstanceExecute.
     fn model_instance_execute(
         model: super::Model,
-        requests: &[super::Request],
+        requests: Vec<super::Request>,
     ) -> Result<(), Error>;
 }
 
@@ -168,13 +168,7 @@ macro_rules! declare_backend {
                 .map(|req| triton_rs::Request::from_ptr(*req))
                 .collect::<Vec<triton_rs::Request>>();
 
-            let err = triton_rs::call_checked!($class::model_instance_execute(model, &requests));
-            requests.iter().for_each(|req| {
-                let req_ptr = req.as_ptr();
-                // TODO: logging
-                unsafe { triton_rs::sys::TRITONBACKEND_RequestRelease(req_ptr,triton_rs::sys::tritonserver_requestreleaseflag_enum_TRITONSERVER_REQUEST_RELEASE_ALL) };
-            });
-            err
+            triton_rs::call_checked!($class::model_instance_execute(model, requests))
         }
     };
 }
